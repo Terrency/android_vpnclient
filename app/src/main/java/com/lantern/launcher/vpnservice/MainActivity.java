@@ -7,6 +7,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 
+import java.io.IOException;
+
 import cn.limc.androidcharts.R;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -29,7 +31,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         end = (Button) findViewById(R.id.end);
         start.setOnClickListener(this);
         end.setOnClickListener(this);
-
+        Runtime runtime = Runtime.getRuntime();
+        try {
+            Process proc = runtime.exec("su");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                CommandUtils.execute("ping -c 1 baidu.com");
+            }
+        });
+        thread.start();
     }
 
     @Override

@@ -1,7 +1,7 @@
 #include "com_lantern_launcher_vpnservice_EchoUtils.h"
-#include "hans/client.h"
-#include "hans/server.h"
-#include "hans/exception.h"
+#include "client.h"
+#include "server.h"
+#include "exception.h"
 
 #include <stdio.h>
 #include <arpa/inet.h>
@@ -18,16 +18,16 @@
 #include <sys/socket.h>
 #include <signal.h>
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-static Worker *worker = NULL;
+//static Worker *worker = NULL;
 
 void Java_com_lantern_launcher_vpnservice_EchoUtils_connectToServer
   (JNIEnv *env, jclass jc, jstring svrip, jstring mtus){
 	  
+	/*
 	const char *serverName = "172.16.130.46";
 	//(*env)->GetStringUTFChars(env, svrip, 0);
     const char *userName = NULL;
@@ -70,6 +70,7 @@ void Java_com_lantern_launcher_vpnservice_EchoUtils_connectToServer
         }
 
     worker->run();
+	*/
 	
 }
 
