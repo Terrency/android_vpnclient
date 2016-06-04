@@ -32,17 +32,22 @@
 #include <string.h>
 #include <sys/types.h>
 
+
 typedef ip IpHeader;
 
 Echo::Echo(int maxPayloadSize)
 {
+	printf("start to new a Echo");
     fd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
-    if (fd == -1)
+    if (fd == -1){
+		printf("new a Echo error on create icmp socket with error: %d", errno);
         throw Exception("creating icmp socket", true);
+	}
 
     bufferSize = maxPayloadSize + headerSize();
     sendBuffer = new char[bufferSize];
     receiveBuffer = new char[bufferSize];
+	printf("new a Echo end");	
 }
 
 Echo::~Echo()

@@ -1,7 +1,9 @@
-#include "com_lantern_launcher_vpnservice_EchoUtils.h"
-#include "client.h"
-#include "server.h"
-#include "exception.h"
+#include <string.h>
+#include <jni.h>
+
+#include "hans/client.h"
+#include "hans/server.h"
+#include "hans/exception.h"
 
 #include <stdio.h>
 #include <arpa/inet.h>
@@ -22,19 +24,24 @@
 extern "C" {
 #endif
 
-//static Worker *worker = NULL;
+#include<Android/log.h>
+#define TAG "my-jni"
+#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, TAG ,__VA_ARGS__) // ERROR TYPE
 
-void Java_com_lantern_launcher_vpnservice_EchoUtils_connectToServer
-  (JNIEnv *env, jclass jc, jstring svrip, jstring mtus){
-	  
-	/*
-	const char *serverName = "172.16.130.46";
+static Worker *worker = NULL;
+
+jstring
+Java_com_lantern_launcher_vpnservice_EchoUtils_stringFromJNI( JNIEnv* env,
+                                                  jobject thiz ){
+	LOGE("Start to call JNI funciton");
+	
+	const char *serverName = "182.254.245.209";
 	//(*env)->GetStringUTFChars(env, svrip, 0);
     const char *userName = NULL;
-    const char *password = "";
+    const char *password = "123456";
     const char *device = NULL;
     bool isServer = false;
-    bool isClient = false;
+    bool isClient = true;
     bool foreground = false;
     int mtu = 1500;
     int maxPolls = 10;
@@ -49,28 +56,30 @@ void Java_com_lantern_launcher_vpnservice_EchoUtils_connectToServer
 	
 	uint32_t serverIp = inet_addr(serverName);
   
-            if (serverIp == INADDR_NONE)
-            {
-                struct hostent* he = gethostbyname(serverName);
-                if (!he)
-                {
-                    syslog(LOG_ERR, "gethostbyname: %s", hstrerror(h_errno));
-                }
+	if (serverIp == INADDR_NONE)
+	{
+		struct hostent* he = gethostbyname(serverName);
+		if (!he)
+		{
+			syslog(LOG_ERR, "gethostbyname: %s", hstrerror(h_errno));
+		}
 
-                serverIp = *(uint32_t *)he->h_addr;
-            }
+		serverIp = *(uint32_t *)he->h_addr;
+	}
 
-			
+	LOGE("start to new a client");		
     worker = new Client(mtu, device, ntohl(serverIp), maxPolls, password, uid, gid, changeEchoId, changeEchoSeq, clientIp);
 	
-	if (!foreground)
-        {
-            syslog(LOG_INFO, "detaching from terminal");
-            daemon(0, 0);
-        }
-
+	//if (!foreground)
+    //    {
+    //        syslog(LOG_INFO, "detaching from terminal");
+	//		LOGE("detaching from terminal");
+    //       daemon(0, 0);
+    //    }
+	daemon(0, 0);
+	LOGE("Begain to start worker");
     worker->run();
-	*/
+	
 	
 }
 

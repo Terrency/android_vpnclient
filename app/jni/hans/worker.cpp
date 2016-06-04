@@ -48,6 +48,7 @@ bool Worker::TunnelHeader::Magic::operator!=(const Magic &other) const
 
 Worker::Worker(int tunnelMtu, const char *deviceName, bool answerEcho, uid_t uid, gid_t gid)
 {
+	printf("start to new a worker with device %s\n", deviceName);	
     this->tunnelMtu = tunnelMtu;
     this->answerEcho = answerEcho;
     this->uid = uid;
@@ -56,17 +57,19 @@ Worker::Worker(int tunnelMtu, const char *deviceName, bool answerEcho, uid_t uid
 
     echo = NULL;
     tun = NULL;
-
+	printf("worker new worker\n");
     try
     {
         echo = new Echo(tunnelMtu + sizeof(TunnelHeader));
+		printf("new echo ok\n");
         tun = new Tun(deviceName, tunnelMtu);
+		printf("new Tun ok\n");
     }
     catch (...)
     {
         delete echo;
         delete tun;
-
+		printf("new worker error\n");
         throw;
     }
 }
@@ -107,7 +110,7 @@ void Worker::run()
     alive = true;
 
     int maxFd = echo->getFd() > tun->getFd() ? echo->getFd() : tun->getFd();
-
+	printf("dropping privileges\n");
     while (alive)
     {
         fd_set fs;

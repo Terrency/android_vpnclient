@@ -220,7 +220,7 @@ int main(int argc, char *argv[])
 
                 serverIp = *(uint32_t *)he->h_addr;
             }
-
+			printf("run as a client\n");
             worker = new Client(mtu, device, ntohl(serverIp), maxPolls, password, uid, gid, changeEchoId, changeEchoSeq, clientIp);
         }
 

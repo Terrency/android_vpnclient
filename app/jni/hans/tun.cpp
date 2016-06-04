@@ -55,7 +55,7 @@ static void winsystem(char *cmd)
 Tun::Tun(const char *device, int mtu)
 {
     char cmdline[512];
-
+	printf("new Tun start\n");
     this->mtu = mtu;
 
     if (device != NULL)
@@ -64,21 +64,31 @@ Tun::Tun(const char *device, int mtu)
         this->device[VTUN_DEV_LEN-1] = 0;
     }
     else
-        this->device[0] = 0;
-
+	{
+		this->device[0] = 0;
+	}
+    printf("try to open device %s\n", this->device);
     fd = tun_open(this->device);
     if (fd == -1)
+	{
+		printf("open device error:%s\n", tun_last_error());
         throw Exception(string("could not create tunnel device: ") + tun_last_error());
-
+	}
+	
     syslog(LOG_INFO, "opened tunnel device: %s", this->device);
 
 #ifdef WIN32
     snprintf(cmdline, sizeof(cmdline), "netsh interface ipv4 set subinterface \"%s\" mtu=%d", this->device, mtu);
     winsystem(cmdline);
 #else
-    snprintf(cmdline, sizeof(cmdline), "/sbin/ifconfig %s mtu %u", this->device, mtu);
+    snprintf(cmdline, sizeof(cmdline), "ifconfig %s mtu %u", this->device, mtu);
     if (system(cmdline) != 0)
+	{
         syslog(LOG_ERR, "could not set tun device mtu");
+		printf("could not set tun device mtu\n");
+	} else {
+		printf("set tun device ifconfig %s mtu %u\n", this->device, mtu);
+	}
 #endif
 }
 
@@ -93,29 +103,26 @@ void Tun::setIp(uint32_t ip, uint32_t destIp, bool includeSubnet)
     string ips = Utility::formatIp(ip);
     string destIps = Utility::formatIp(destIp);
 
-#ifdef WIN32
-    snprintf(cmdline, sizeof(cmdline), "netsh interface ip set address name=\"%s\" "
-        "static %s 255.255.255.0", device, ips.c_str());
-    winsystem(cmdline);
-
-    if (!tun_set_ip(fd, ip, ip & 0xffffff00, 0xffffff00))
-        syslog(LOG_ERR, "could not set tun device driver ip address: %s", tun_last_error());
-#elif LINUX
-    snprintf(cmdline, sizeof(cmdline), "/sbin/ifconfig %s %s netmask 255.255.255.0", device, ips.c_str());
+    snprintf(cmdline, sizeof(cmdline), "ifconfig %s inet %s pointopoint %s netmask 255.255.255.0", device, ips.c_str(), destIps.c_str());
+	printf("try to set tun device ip address %s %s %s netmask 255.255.255.0\n", device, ips.c_str(), destIps.c_str());
     if (system(cmdline) != 0)
-        syslog(LOG_ERR, "could not set tun device ip address");
-#else
-    snprintf(cmdline, sizeof(cmdline), "/sbin/ifconfig %s %s %s netmask 255.255.255.255", device, ips.c_str(), destIps.c_str());
-    if (system(cmdline) != 0)
-        syslog(LOG_ERR, "could not set tun device ip address");
-
+	{
+        syslog(LOG_ERR, "could not set tun device ip address %s %s %s", device, ips.c_str(), destIps.c_str());
+		printf("could not set tun device ip address %s %s %s\n", device, ips.c_str(), destIps.c_str());
+	} else {
+		printf("success set tun device ip address %s %s %s\n", device, ips.c_str(), destIps.c_str());
+	}
     if (includeSubnet)
     {
-        snprintf(cmdline, sizeof(cmdline), "/sbin/route add %s/24 %s", destIps.c_str(), destIps.c_str());
+        snprintf(cmdline, sizeof(cmdline), "route add %s/24 %s dev tun0", destIps.c_str(), destIps.c_str());
         if (system(cmdline) != 0)
+		{
             syslog(LOG_ERR, "could not add route");
+			printf("could not add route\n");
+		}else{
+			printf("route add %s/24 via %s dev tun0\n", destIps.c_str(), destIps.c_str());
+		}
     }
-#endif
 }
 
 void Tun::write(const char *buffer, int length)

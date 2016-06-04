@@ -27,6 +27,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <syslog.h>
+#include <stdlib.h>
 
 using namespace std;
 
@@ -37,6 +38,7 @@ Client::Client(int tunnelMtu, const char *deviceName, uint32_t serverIp,
                bool changeEchoId, bool changeEchoSeq, uint32_t desiredIp)
 : Worker(tunnelMtu, deviceName, false, uid, gid), auth(passphrase)
 {
+	printf("new client started\n");
     this->serverIp = serverIp;
     this->clientIp = INADDR_NONE;
     this->desiredIp = desiredIp;
@@ -47,6 +49,7 @@ Client::Client(int tunnelMtu, const char *deviceName, uint32_t serverIp,
     this->nextEchoSequence = Utility::rand();
 
     state = STATE_CLOSED;
+	printf("new client finish\n");
 }
 
 Client::~Client()
@@ -56,6 +59,7 @@ Client::~Client()
 
 void Client::sendConnectionRequest()
 {
+	printf("client send request\n");
     Server::ClientConnectData *connectData = (Server::ClientConnectData *)echoSendPayloadBuffer();
     connectData->maxPolls = maxPolls;
     connectData->desiredIp = desiredIp;
@@ -91,6 +95,8 @@ void Client::sendChallengeResponse(int dataLength)
 
 bool Client::handleEchoData(const TunnelHeader &header, int dataLength, uint32_t realIp, bool reply, uint16_t id, uint16_t seq)
 {
+	char cmdline[512];
+	printf("client handle echo data\n");
     if (realIp != serverIp || !reply)
         return false;
 
@@ -124,10 +130,12 @@ bool Client::handleEchoData(const TunnelHeader &header, int dataLength, uint32_t
                 if (dataLength != sizeof(uint32_t))
                 {
                     throw Exception("invalid ip received");
+					printf("invalid ip received\n");
                     return true;
                 }
 
                 syslog(LOG_INFO, "connection established");
+				printf("connection established\n");
 
                 uint32_t ip = ntohl(*(uint32_t *)echoReceivePayloadBuffer());
                 if (ip != clientIp)
@@ -138,6 +146,37 @@ bool Client::handleEchoData(const TunnelHeader &header, int dataLength, uint32_t
                     clientIp = ip;
                     desiredIp = ip;
                     tun->setIp(ip, (ip & 0xffffff00) + 1, false);
+					printf("client set ip\n");
+					//设置客户端路由表
+					//route add -host 182.254.245.209 gw 192.168.1.253
+					//route add default gw 10.1.2.1
+					//route del default gw 192.168.1.253
+					/**
+					snprintf(cmdline, sizeof(cmdline), "busybox route add -host 182.254.245.209 gw 192.168.1.253");
+					if (system(cmdline) != 0)
+					{
+						syslog(LOG_ERR, "could not add route");
+						printf("could not add route\n");
+					}else{
+						printf("busybox route add -host 182.254.245.209 gw 192.168.1.253");
+					}
+					snprintf(cmdline, sizeof(cmdline), "busybox route add default gw 10.1.2.1");
+					if (system(cmdline) != 0)
+					{
+						syslog(LOG_ERR, "could not add route");
+						printf("could not add route\n");
+					}else{
+						printf("busybox route add default gw 10.1.2.1\n");
+					}
+					snprintf(cmdline, sizeof(cmdline), "busybox route del default gw 192.168.1.253");
+					if (system(cmdline) != 0)
+					{
+						syslog(LOG_ERR, "could not add route");
+						printf("could not add route\n");
+					}else{
+						printf("busybox route del default gw 192.168.1.253\n");
+					}
+					**/
                 }
                 state = STATE_ESTABLISHED;
 
@@ -199,6 +238,7 @@ void Client::handleDataFromServer(int dataLength)
     if (dataLength == 0)
     {
         syslog(LOG_WARNING, "received empty data packet");
+		printf("received empty data packet\n");
         return;
     }
 
@@ -237,7 +277,7 @@ void Client::handleTimeout()
 void Client::run()
 {
     now = Time::now();
-
+	printf("client::run\n");
     sendConnectionRequest();
 
     Worker::run();

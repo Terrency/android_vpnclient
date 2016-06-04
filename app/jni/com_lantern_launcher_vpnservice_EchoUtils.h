@@ -9,10 +9,10 @@ extern "C" {
 #endif
 /*
  * Class:     com_lantern_launcher_vpnservice_EchoUtils
- * Method:    connectToServer
+ * Method:    stringFromJNI
  * Signature: (Ljava/lang/String;Ljava/lang/String;)V
  */
-JNIEXPORT void JNICALL Java_com_lantern_launcher_vpnservice_EchoUtils_connectToServer
+JNIEXPORT void JNICALL Java_com_lantern_launcher_vpnservice_EchoUtils_stringFromJNI
   (JNIEnv *, jclass, jstring, jstring);
 
 #ifdef __cplusplus
