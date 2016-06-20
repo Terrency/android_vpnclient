@@ -16,7 +16,7 @@ LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 
-LOCAL_MODULE    :=  hans
+LOCAL_MODULE    := hans
 LOCAL_SRC_FILES :=  hans/utility.cpp \
 					hans/exception.cpp \
 					hans/time.cpp \

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">AndroidCharts Demo</string>
+    <string name="app_name">VPN Client</string>
     <string name="gridchart">GridChart</string>
     <string name="linechart">LineChart</string>
     <string name="sliplinechart">SlipLineChart</string>

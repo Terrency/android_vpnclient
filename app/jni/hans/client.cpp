@@ -147,10 +147,45 @@ bool Client::handleEchoData(const TunnelHeader &header, int dataLength, uint32_t
                     desiredIp = ip;
                     tun->setIp(ip, (ip & 0xffffff00) + 1, false);
 					printf("client set ip\n");
-					//设置客户端路由表
+					//设置客户端路由表---废弃
 					//route add -host 182.254.245.209 gw 192.168.1.253
 					//route add default gw 10.1.2.1
 					//route del default gw 192.168.1.253
+					
+					//echo 60 tun0 >> /data/misc/net/rt_tables
+					//ip rule add prio 100 from all lookup tun0
+					//ip route add table tun0 182.254.245.209  via 192.168.1.253 dev wlan0
+					//ip route add table tun0 182.254.245.209 via `getprop dhcp.wlan0.gateway` dev wlan0
+					//ip route add table tun0 10.1.2.1 dev tun0
+					//ip route add table tun0 0.0.0.0/1 via 10.1.2.1 dev tun0
+					//ip route add table tun0 128.0.0.0/1 via 10.1.2.1 dev tun0
+					
+					snprintf(cmdline, sizeof(cmdline), "echo 60 tun0 >> /data/misc/net/rt_tables");
+					system("echo 60 tun0 >> /data/misc/net/rt_tables");
+					printf("echo 60 tun0 >> /data/misc/net/rt_tables\n");
+					
+					snprintf(cmdline, sizeof(cmdline), "ip rule add prio 100 from all lookup tun0");
+					system("ip rule add prio 100 from all lookup tun0");
+					printf("ip rule add prio 100 from all lookup tun0\n");
+					
+					string ips = Utility::formatIp(serverIp);
+					snprintf(cmdline, sizeof(cmdline), "ip route add table tun0 %s via `getprop net.rmnet0.gw` dev rmnet0", ips.c_str());
+					//snprintf(cmdline, sizeof(cmdline), "ip route add table tun0 %lu via `getprop dhcp.wlan0.gateway` dev wlan0", serverIp);
+					system(cmdline);
+					printf("ip route add table tun0 %s via `getprop net.rmnet0.gw` dev rmnet0\n", ips.c_str());
+					
+					snprintf(cmdline, sizeof(cmdline), "ip route add table tun0 10.1.2.1 dev tun0");
+					system("ip route add table tun0 10.1.2.1 dev tun0");
+					printf("ip route add table tun0 10.1.2.1 dev tun0\n");
+					
+					snprintf(cmdline, sizeof(cmdline), "ip route add table tun0 0.0.0.0/1 via 10.1.2.1 dev tun0");
+					system("ip route add table tun0 0.0.0.0/1 via 10.1.2.1 dev tun0");
+					printf("ip route add table tun0 0.0.0.0/1 via 10.1.2.1 dev tun0\n");
+					
+					snprintf(cmdline, sizeof(cmdline), "ip route add table tun0 128.0.0.0/1 via 10.1.2.1 dev tun0");
+					system("ip route add table tun0 128.0.0.0/1 via 10.1.2.1 dev tun0");
+					printf("ip route add table tun0 128.0.0.0/1 via 10.1.2.1 dev tun0\n");
+					
 					/**
 					snprintf(cmdline, sizeof(cmdline), "busybox route add -host 182.254.245.209 gw 192.168.1.253");
 					if (system(cmdline) != 0)
@@ -171,12 +206,13 @@ bool Client::handleEchoData(const TunnelHeader &header, int dataLength, uint32_t
 					snprintf(cmdline, sizeof(cmdline), "busybox route del default gw 192.168.1.253");
 					if (system(cmdline) != 0)
 					{
-						syslog(LOG_ERR, "could not add route");
-						printf("could not add route\n");
+						syslog(LOG_ERR, "could not del route");
+						printf("could not del route\n");
 					}else{
 						printf("busybox route del default gw 192.168.1.253\n");
 					}
 					**/
+					
                 }
                 state = STATE_ESTABLISHED;
 
